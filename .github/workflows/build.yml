@@ -40,9 +40,8 @@ jobs:
           
           # 利用物理路径无损注入最新支持 anytls 的核心内核
           mkdir -p package/base-files/files/etc/openclash/core/
-          wget 'https://ghfast.top/https://github.com/MetaCubeX/mihomo/releases/download/v1.19.2/mihomo-linux-mipsle-softfloat-v1.19.2.gz' -O package/base-files/files/etc/openclash/core/clash_meta.gz
-          wget 'https://ghfast.top' -O package/base-files/files/etc/openclash/core/clash_meta.gz
-
+          wget 'https://ghfast.top/https://github.com/MetaCubeX/mihomo/releases/download/v1.19.2/mihomo-linux-mipsle-softfloat-v1.19.2.gz' \
+          -O package/base-files/files/etc/openclash/core/clash_meta.gz         
           gunzip package/base-files/files/etc/openclash/core/clash_meta.gz
           chmod +x package/base-files/files/etc/openclash/core/clash_meta
           echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
