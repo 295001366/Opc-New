@@ -21,7 +21,8 @@ jobs:
           
       - name: Clone source code
         run: |
-          git clone --depth 1 -b openwrt-24.10 https://github.com openwrt
+          git clone --depth 1 -b openwrt-24.10 https://github.com/openwrt/openwrt.git openwrt
+
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
