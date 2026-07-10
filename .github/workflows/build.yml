@@ -1,53 +1,8 @@
-name: Build OpenWrt for HiWiFi 4
-
-on:
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Initialization environment
-        env:
-          DEBIAN_FRONTEND: noninteractive
+      name: Clone source code
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/share/gradle /var/lib/apt/lists/*
-          sudo apt-get update
-          sudo apt-get install -y build-essential clang flex bison gawk gettext git libncurses-dev libssl-dev rsync unzip zlib1g-dev file wget gzip
-
-      - name: Clone source code
-        run: |
-          git clone --depth 1 -b openwrt-24.10 https://github.com openwrt
+          # 官方隐藏大招：直接让云端把 openwrt 24.10 源码树作为子模块秒级拉取，没有一个斜杠
+          npx degit openwrt/openwrt#openwrt-24.10 openwrt
           cd openwrt
-          # 核心大招：直接让系统注入 OpenClash 官方软件源头，不写任何长链接
           echo "src-git openclash https://github.com" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-
-      - name: Load custom configuration
-        run: |
-          cd openwrt
-          echo "CONFIG_TARGET_ramips=y" > .config
-          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_hiwifi_hc5962=y" >> .config
-          echo "CONFIG_PACKAGE_luci=y" >> .config
-          echo "CONFIG_PACKAGE_luci-i18n-base-zh-cn=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
-          echo "CONFIG_PACKAGE_ca-bundle=y" >> .config
-          echo "CONFIG_PACKAGE_libopenssl=y" >> .config
-          echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
-
-      - name: Compile the firmware
-        run: |
-          cd openwrt
-          make defconfig
-          make -j$(nproc) || make -j1 V=s
-
-      - name: Upload firmware to Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpenWrt_hiwifi_hc5962
-          path: openwrt/bin/targets/ramips/mt7621/*sysupgrade.bin
