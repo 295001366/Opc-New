@@ -1,8 +1,6 @@
-      name: Clone source code
-        run: |
-          # 官方隐藏大招：直接让云端把 openwrt 24.10 源码树作为子模块秒级拉取，没有一个斜杠
-          npx degit openwrt/openwrt#openwrt-24.10 openwrt
-          cd openwrt
-          echo "src-git openclash https://github.com" >> feeds.conf.default
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+name: Clone source code
+run: |
+  npx degit openwrt/openwrt#openwrt-24.10 openwrt
+  cd openwrt
+  ./scripts/feeds update -a
+  ./scripts/feeds install -a
