@@ -18,12 +18,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential clang flex bison gawk gettext git libncurses-dev libssl-dev rsync unzip zlib1g-dev file wget gzip
 
-          
       - name: Clone source code
         run: |
-          git clone --depth 1 -b openwrt-24.10 https://github.com/openwrt/openwrt.git openwrt
-
+          git clone --depth 1 -b openwrt-24.10 https://github.com openwrt
           cd openwrt
+          # 核心大招：直接让系统注入 OpenClash 官方软件源头，不写任何长链接
+          echo "src-git openclash https://github.com" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
@@ -38,21 +38,7 @@ jobs:
           echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
           echo "CONFIG_PACKAGE_ca-bundle=y" >> .config
           echo "CONFIG_PACKAGE_libopenssl=y" >> .config
-          
-          # 全自动无缝预埋全网最新 OpenClash 客户端
-          mkdir -p package/luci-app-openclash
-          cd package/luci-app-openclash
-          wget https://ghfast.top
-          tar -xzvf master.tar.gz --strip-components=1
-          rm -f master.tar.gz
-          cd ../..
           echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
-
-          # 全自动无缝预埋最新 Stable 稳定版支持 anytls 的核心内核
-          mkdir -p package/base-files/files/etc/openclash/core/
-          wget -O package/base-files/files/etc/openclash/core/clash_meta.gz https://ghfast.top
-          gunzip package/base-files/files/etc/openclash/core/clash_meta.gz
-          chmod +x package/base-files/files/etc/openclash/core/clash_meta
 
       - name: Compile the firmware
         run: |
