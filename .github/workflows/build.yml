@@ -1,0 +1,65 @@
+name: Build OpenWrt for HiWiFi 4
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/share/gradle /var/lib/apt/lists/*
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang flex bison gawk gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget gunzip
+          
+      - name: Clone source code
+        run: |
+          git clone --depth 1 -b openwrt-24.10 https://github.com openwrt
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Load custom configuration
+        run: |
+          cd openwrt
+          echo "CONFIG_TARGET_ramips=y" > .config
+          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_hiwifi_hc5962=y" >> .config
+          echo "CONFIG_PACKAGE_luci=y" >> .config
+          echo "CONFIG_PACKAGE_luci-i18n-base-zh-cn=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-tun=y" >> .config
+          echo "CONFIG_PACKAGE_ca-bundle=y" >> .config
+          echo "CONFIG_PACKAGE_libopenssl=y" >> .config
+          
+          # 全自动无缝预埋全网最新 OpenClash 客户端
+          mkdir -p package/luci-app-openclash
+          cd package/luci-app-openclash
+          wget https://ghfast.top
+          tar -xzvf master.tar.gz --strip-components=1
+          rm -f master.tar.gz
+          cd ../..
+          echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
+
+          # 全自动无缝预埋最新 Stable 稳定版支持 anytls 的核心内核
+          mkdir -p package/base-files/files/etc/openclash/core/
+          wget -O package/base-files/files/etc/openclash/core/clash_meta.gz https://ghfast.top
+          gunzip package/base-files/files/etc/openclash/core/clash_meta.gz
+          chmod +x package/base-files/files/etc/openclash/core/clash_meta
+
+      - name: Compile the firmware
+        run: |
+          cd openwrt
+          make defconfig
+          make -j$(nproc) || make -j1 V=s
+
+      - name: Upload firmware to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt_hiwifi_hc5962
+          path: openwrt/bin/targets/ramips/mt7621/*sysupgrade.bin
