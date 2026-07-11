@@ -18,18 +18,17 @@ jobs:
 
       - name: Clone OpenWrt 25.12 stable & sync latest code
         run: |
-          git clone -b openwrt-25.12 shturl.cc/mNHQclEIRr49as8xs8JBO82AYOQVaBx9gAbWqgR8SpuoH0q openwrt
+          git clone -b openwrt-25.12 shturl.cc/CyTNWL3G3UW7c9pxepcfX2bXk0V09qhL3dzMkUikdwWUUfZ openwrt
           cd openwrt
           git pull origin openwrt-25.12
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      # 这里是修改后的OpenClash步骤，仅多一行删除旧文件
       - name: Add OpenClash package source
         run: |
           cd openwrt/package
           rm -rf luci-app-openclash
-          git clone shturl.cc/H2iyvpu9GSxAb6r8WlclG3hwb6Q6qE9rf5FAT871K5ZtP5gPvqc luci-app-openclash
+          git clone shturl.cc/wozZi0fCv7QiFx8MKGaJ3ACqBY16FSpZWNHBvNj5Nq4LVRnmjkj luci-app-openclash
 
       - name: Load custom config & auto download latest mihomo core
         run: |
@@ -46,7 +45,7 @@ jobs:
 
           mkdir -p package/base-files/files/etc/openclash/core/
           LATEST_MIHOMO=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
-          wget "shturl.cc/qBluSuoh4wCrfalOd965fOMmTjutJMyb7lIb1170fyQIjFHa5KW1WjGMW6HgPS1${LATEST_MIHOMO}/mihomo-linux-mipsle-softfloat-${LATEST_MIHOMO}.gz" \
+          wget "shturl.cc/gQlpmQ6BeneEQ5bDxFCB6SfAibiUqHkbOr5QHGvQK7dUt2F6x3tmqqCRqPqJld0${LATEST_MIHOMO}/mihomo-linux-mipsle-softfloat-${LATEST_MIHOMO}.gz" \
           -O package/base-files/files/etc/openclash/core/clash_meta.gz         
           gunzip package/base-files/files/etc/openclash/core/clash_meta.gz
           chmod +x package/base-files/files/etc/openclash/core/clash_meta
