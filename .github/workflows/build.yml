@@ -18,7 +18,7 @@ jobs:
 
       - name: Clone OpenWrt 25.12 stable & sync latest code
         run: |
-          git clone -b openwrt-25.12 https://shturl.cc/Jhttps://github.com/openwrt/openwrt.git openwrt
+          git clone -b openwrt-25.12 https://github.com/openwrt/openwrt.git openwrt
           cd openwrt
           git pull origin openwrt-25.12
           ./scripts/feeds update -a
@@ -28,7 +28,7 @@ jobs:
         run: |
           cd openwrt/package
           rm -rf luci-app-openclash
-          git clone shturl.cc/6T9AFeNsTC6i459cZ9Np9nopTHGMoZQC6X5oW9j6n37diRS3PKY luci-app-openclash
+          git clone https://github.com/vernesong/OpenClash.git luci-app-openclash
 
       - name: Load custom config & auto download latest mihomo core
         run: |
@@ -45,18 +45,18 @@ jobs:
 
           mkdir -p package/base-files/files/etc/openclash/core/
           LATEST_MIHOMO=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
-          wget "shturl.cc/skJVyQ4cznmvoWAPtHjliVrA8QM22ogIMb5KaI0JuVxYonfPJgYgSMoxEiSLRZb${LATEST_MIHOMO}/mihomo-linux-mipsle-softfloat-${LATEST_MIHOMO}.gz" \
+          wget "https://github.com/MetaCubeX/mihomo/releases/download/${LATEST_MIHOMO}/mihomo-linux-mipsle-softfloat-${LATEST_MIHOMO}.gz" \
           -O package/base-files/files/etc/openclash/core/clash_meta.gz         
           gunzip package/base-files/files/etc/openclash/core/clash_meta.gz
           chmod +x package/base-files/files/etc/openclash/core/clash_meta
 
-      - name: Compile firmware
+      - name: Compile the firmware
         run: |
           cd openwrt
           make defconfig
           make -j$(nproc) || make -j1 V=s
 
-      - name: Upload compiled firmware
+      - name: Upload firmware to Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: OpenWrt25.12_HiWiFi_HC5962
